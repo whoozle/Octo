@@ -100,7 +100,9 @@ function Emulator() {
 	this.st = 0;        // sound timer
 	this.hires = false; // are we in SuperChip high res mode?
 	this.flags = [];    // semi-persistent hp48 flag vars
-	this.pattern = [];  // audio pattern buffer
+	this.audioAddress = 0; // pointer to audio data
+	this.audioOffset = 0;
+	this.audioTs = 0;
 	this.plane = 1;     // graphics plane
 	this.profile_data = {};
 
@@ -117,7 +119,7 @@ function Emulator() {
 	this.exitVector  = function() {}                                   // fired by 'exit'
 	this.importFlags = function() { return [0, 0, 0, 0, 0, 0, 0, 0]; } // load persistent flags
 	this.exportFlags = function(flags) {}                              // save persistent flags
-	this.buzzTrigger = function(ticks, remainingTicks) {}                              // fired when buzzer played
+	this.buzzTrigger = function(timestamp, data) {}                    // fired when buzzer played
 
 	this.init = function(rom) {
 		// initialise memory with a new array to ensure that it is of the right size and is initiliased to 0
@@ -129,7 +131,6 @@ function Emulator() {
 		for(var z = 0; z < bigfont.length; z++) { this.m[z + font.length] = bigfont[z]; }
 		for(var z = 0; z < rom.rom.length; z++) { this.m[0x200+z] = rom.rom[z]; }
 		for(var z = 0; z < 16;             z++) { this.v[z] = 0; }
-		for(var z = 0; z < 16;             z++) { this.pattern[z] = 0; }
 
 		// initialize interpreter state
 		this.r = [];
@@ -201,14 +202,13 @@ function Emulator() {
 				this.plane = (x & 0x3);
 				break;
 			case 0x02:
-				for(var z = 0; z < 16; z++) {
-					this.pattern[z] = this.m[this.i+z];
-				}
+				this.audioAddress = this.i;
+				this.audioOffset = 0;
 				break;
 			case 0x07: this.v[x] = this.dt; break;
 			case 0x0A: this.waiting = true; this.waitReg = x; break;
 			case 0x15: this.dt = this.v[x]; break;
-			case 0x18: this.buzzTrigger(this.v[x], this.st); this.st = this.v[x]; break;
+			case 0x18: this.st = this.v[x]; this.audioTs = Date.now(); break;
 			case 0x1E: this.i = (this.i + this.v[x])&0xFFFF; break;
 			case 0x29: this.i = ((this.v[x] & 0xF) * 5); break;
 			case 0x30: this.i = ((this.v[x] & 0xF) * 10 + font.length); break;
@@ -460,6 +460,21 @@ function Emulator() {
 		}
 	}
 
+	this.generateAudio = function() {
+		var ts = Date.now();
+		var dt = ts - this.audioTs;
+		var n = Math.floor(dt / 2);
+		var data = [];
+		while(n--) {
+			var next = this.m[this.audioAddress + this.audioOffset++];
+			this.audioTs += 2; //4000/8 = 500 bytes, 1000/500 = 2 ms per byte
+			this.audioOffset &= 0xf;
+			data.push(next);
+		}
+		if (data.length)
+			this.buzzTrigger(ts, data);
+	}
+
 	this.tick = function() {
 		if (this.halted) { return; }
 		this.tickCounter++;
@@ -470,5 +485,7 @@ function Emulator() {
 			console.log("halted: " + err);
 			this.halted = true;
 		}
+		if (this.st)
+			this.generateAudio()
 	}
 }

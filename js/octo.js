@@ -121,7 +121,7 @@ function runRom(rom) {
 	emulator.exitVector = reset;
 	emulator.importFlags = function() { return JSON.parse(localStorage.getItem("octoFlagRegisters")); }
 	emulator.exportFlags = function(flags) { localStorage.setItem("octoFlagRegisters", JSON.stringify(flags)); }
-	emulator.buzzTrigger = function(ticks, remainingTicks) { playPattern(ticks, emulator.pattern, remainingTicks); }
+	emulator.buzzTrigger = function(ts, data) { enqueuePattern(ts, data) }
 	emulator.init(rom);
 	setRenderTarget(5, "target");
 	audioSetup();
