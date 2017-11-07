@@ -160,6 +160,20 @@ function Emulator() {
 		}
 	}
 
+	this.store = function(addr, value) {
+		if (addr < 0x200) {
+			console.log('TRAP', addr)
+		}
+		return (this.m[addr] = value)
+	}
+
+	this.load = function(addr) {
+		if (addr < 0x200) {
+			console.log('TRAP')
+		}
+		return this.m[addr]
+	}
+
 	this.math = function(x, y, op) {
 		// basic arithmetic opcodes
 		switch(op) {
@@ -213,16 +227,16 @@ function Emulator() {
 			case 0x29: this.i = ((this.v[x] & 0xF) * 5); break;
 			case 0x30: this.i = ((this.v[x] & 0xF) * 10 + font.length); break;
 			case 0x33:
-				this.m[this.i]   = Math.floor(this.v[x]/100)%10;
-				this.m[this.i+1] = Math.floor(this.v[x]/10)%10;
-				this.m[this.i+2] = this.v[x]%10;
+				this.store(this.i, Math.floor(this.v[x]/100)%10);
+				this.store(this.i + 1, Math.floor(this.v[x]/10)%10);
+				this.store(this.i + 2, this.v[x]%10);
 				break;
 			case 0x55:
-				for(var z = 0; z <= x; z++) { this.m[this.i+z] = this.v[z]; }
+				for(var z = 0; z <= x; z++) { this.store(this.i+z, this.v[z]); }
 				if (!this.loadStoreQuirks) { this.i = (this.i+x+1)&0xFFFF; }
 				break;
 			case 0x65:
-				for(var z = 0; z <= x; z++) { this.v[z] = this.m[this.i+z]; }
+				for(var z = 0; z <= x; z++) { this.v[z] = this.load(this.i+z); }
 				if (!this.loadStoreQuirks) { this.i = (this.i+x+1)&0xFFFF; }
 				break;
 			case 0x75:
@@ -425,15 +439,15 @@ function Emulator() {
 			if (n == 2) {
 				// save range
 				var dist = Math.abs(x - y);
-				if (x < y) { for(var z = 0; z <= dist; z++) { this.m[this.i+z] = this.v[x+z]; }}
-				else       { for(var z = 0; z <= dist; z++) { this.m[this.i+z] = this.v[x-z]; }}
+				if (x < y) { for(var z = 0; z <= dist; z++) { this.store(this.i+z, this.v[x+z]); }}
+				else       { for(var z = 0; z <= dist; z++) { this.store(this.i+z, this.v[x-z]); }}
 				return;
 			}
 			else if (n == 3) {
 				// load range
 				var dist = Math.abs(x - y);
-				if (x < y) { for(var z = 0; z <= dist; z++) { this.v[x+z] = this.m[this.i+z]; }}
-				else       { for(var z = 0; z <= dist; z++) { this.v[x-z] = this.m[this.i+z]; }}
+				if (x < y) { for(var z = 0; z <= dist; z++) { this.v[x+z] = this.load(this.i+z); }}
+				else       { for(var z = 0; z <= dist; z++) { this.v[x-z] = this.load(this.i+z); }}
 				return;
 			}
 			else {
