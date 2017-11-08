@@ -204,11 +204,9 @@ function updateSource() {
 	reader.readAsText(file);
 }
 
-function runGist() {
+function runGistById(gistId) {
 	var xhr = new XMLHttpRequest();
-	var gistId = location.search.match(/gist=(\w+)/);
-	if (!gistId) { return; }
-	xhr.open('GET', 'https://api.github.com/gists/' + gistId[1]);
+	xhr.open('GET', 'https://api.github.com/gists/' + gistId);
 	xhr.onreadystatechange = function() {
 		if (xhr.readyState == 4 && (xhr.status == 200 || xhr.status !== 201)) {
 			var result = JSON.parse(xhr.responseText);
@@ -227,6 +225,12 @@ function runGist() {
 		}
 	}
 	xhr.send();
+}
+
+function runGist() {
+	var gistId = location.search.match(/gist=(\w+)/);
+	if (!gistId) { return; }
+	runGistById(gistId[1]);
 }
 
 ////////////////////////////////////
