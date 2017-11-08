@@ -366,7 +366,6 @@ function keyUp(event) {
 
 function handleMouseEvent(e) {
 	setMouseState(e.offsetX, e.offsetY, e.buttons)
-	console.log(e)
 	e.preventDefault()
 }
 
