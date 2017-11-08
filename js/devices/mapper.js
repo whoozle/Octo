@@ -31,11 +31,11 @@ IORegion.prototype.store = function(addr, value) {
 }
 
 var XOMapper = function() {
-	this._state = [0, 0]
+	this._state = [0xff, 0xff]
 }
 
 XOMapper.prototype.resetState = function() {
-	this._state[0] = this._state[1] = 0
+	this._state[0] = this._state[1] = 0xff
 }
 
 XOMapper.prototype.load = function(addr, region, chip) {
@@ -43,14 +43,13 @@ XOMapper.prototype.load = function(addr, region, chip) {
 }
 
 XOMapper.prototype.store = function(addr, value, region, chip) {
+	this.resetState()
 	switch(addr) {
 	case 0:
-		this.resetState()
 		if (value & 0x80) {
 			var newDevice = value & 0x7f
 			var createDevice = _deviceList[newDevice] //add multiple device support here, e.g. gamepads
-			var device = createDevice(chip)
-			console.log(device)
+			createDevice(chip)
 		} else {
 			for(var i = 0; i < chip.ioDevices.length; ++i) {
 				var device = chip.ioDevices[i]

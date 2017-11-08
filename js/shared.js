@@ -275,7 +275,7 @@ function setMouseState(x, y, buttons) {
 	y = Math.floor(y / size)
 	x = Math.floor(x / size)
 
-	emulator.mouseState[0] = y
-	emulator.mouseState[1] = x
+	emulator.mouseState[0] = x
+	emulator.mouseState[1] = y
 	emulator.mouseState[2] = buttons
 }
