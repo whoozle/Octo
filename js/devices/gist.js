@@ -1,11 +1,23 @@
-var GistLoader = function() { }
+var GistLoader = function() {
+	this.gist = ''
+}
 
 GistLoader.prototype.load = function(addr, region, chip) {
 	return 0;
 }
 
 GistLoader.prototype.store = function(addr, value, region, chip) {
-	console.log('GIST', addr, value)
+	var hex = value.toString(16)
+	if (value < 0x10)
+		hex = '0' + hex
+	this.gist += hex
+
+	if (this.gist.length === 20) {
+		var gist = this.gist
+		console.log('LOADING GIST', gist)
+		this.gist = ''
+		runGistById(gist)
+	}
 }
 
 xoioRegisterDevice(function(chip) { chip.registerIODevice(1, new GistLoader()) })
