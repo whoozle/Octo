@@ -63,38 +63,6 @@ var bigfont = [
 	0xFF, 0xFF, 0xC0, 0xC0, 0xFF, 0xFF, 0xC0, 0xC0, 0xC0, 0xC0  // F
 ];
 
-var IORegion = function(base, size, device, chip) {
-	this.base = base
-	this.size = size
-	this.device = device
-	this.chip = chip
-}
-
-IORegion.prototype.load = function(addr) {
-	addr -= this.base
-	if (addr < 0 || addr >= this.size)
-		throw new Error('Out of bound exception: address 0x' + addr.toString(16) + ' with base 0x' + addr.toString(16))
-	return this.device.load(addr, this, this.chip)
-}
-
-IORegion.prototype.store = function(addr, value) {
-	addr -= this.base
-	if (addr < 0 || addr >= this.size)
-		throw new Error('Out of bound exception: address 0x' + addr.toString(16) + ' with base 0x' + addr.toString(16))
-	this.device.store(addr, value, this, this.chip)
-}
-
-var _deviceList = [];
-var _mapperDeviceList = [];
-
-function xoioRegisterMapperDevice(callback) {
-	_mapperDeviceList.push(callback);
-}
-
-function xoioRegisterDevice(callback) {
-	_deviceList.push(callback);
-}
-
 ////////////////////////////////////
 //
 //   The Chip8 Interpreter:
@@ -159,9 +127,9 @@ function Emulator() {
 		return addr
 	}
 
-	this.registerIODevice = function(size, device) {
+	this.registerIODevice = function(id, size, device) {
 		var addr = this.allocateIORegion(size)
-		this.ioDevices.push(new IORegion(addr, size, device, this))
+		this.ioDevices.push(new IORegion(id, addr, size, device, this))
 	}
 
 	this.init = function(rom) {
@@ -202,18 +170,14 @@ function Emulator() {
 		this.tickCounter = 0;
 		this.profile_data = {};
 
-		this.nextIOAddress = 0x1f0;
-		this.ioDevices = [];
-
-		var chip = this
-		_mapperDeviceList.forEach(function(callback) { callback(chip) })
+		this.initXOIO(true); //init in compat mode
 	}
 
 	this.initXOIO = function(compat) {
 		this.nextIOAddress = compat? 0x1f0: 0
 		this.ioDevices = []
 		var chip = this
-		_deviceList.forEach(function(callback) { callback(chip) })
+		_mapperDeviceList.forEach(function(callback) { callback(chip) })
 	}
 
 	this.writeCarry = function(dest, value, flag) {
