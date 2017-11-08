@@ -63,6 +63,38 @@ var bigfont = [
 	0xFF, 0xFF, 0xC0, 0xC0, 0xFF, 0xFF, 0xC0, 0xC0, 0xC0, 0xC0  // F
 ];
 
+var IORegion = function(base, size, device, chip) {
+	this.base = base
+	this.size = size
+	this.device = device
+	this.chip = chip
+}
+
+IORegion.prototype.load = function(addr) {
+	addr -= this.base
+	if (addr < 0 || addr >= this.size)
+		throw new Error('Out of bound exception: address 0x' + addr.toString(16) + ' with base 0x' + addr.toString(16))
+	return this.device.load(addr, this, this.chip)
+}
+
+IORegion.prototype.store = function(addr, value) {
+	addr -= this.base
+	if (addr < 0 || addr >= this.size)
+		throw new Error('Out of bound exception: address 0x' + addr.toString(16) + ' with base 0x' + addr.toString(16))
+	this.device.store(addr, value, this, this.chip)
+}
+
+var _deviceList = [];
+var _mapperDeviceList = [];
+
+function xoioRegisterMapperDevice(callback) {
+	_mapperDeviceList.push(callback);
+}
+
+function xoioRegisterDevice(callback) {
+	_deviceList.push(callback);
+}
+
 ////////////////////////////////////
 //
 //   The Chip8 Interpreter:
@@ -119,6 +151,19 @@ function Emulator() {
 	this.exportFlags = function(flags) {}                              // save persistent flags
 	this.buzzTrigger = function(ticks, remainingTicks) {}                              // fired when buzzer played
 
+	this.allocateIORegion = function(size) {
+		var addr = this.nextIOAddress;
+		if (addr + size > 0x200)
+			throw new Error('cannot allocate io region with size ' + size)
+		this.nextIOAddress += size
+		return addr
+	}
+
+	this.registerIODevice = function(size, device) {
+		var addr = this.allocateIORegion(size)
+		this.ioDevices.push(new IORegion(addr, size, device, this))
+	}
+
 	this.init = function(rom) {
 		// initialise memory with a new array to ensure that it is of the right size and is initiliased to 0
 		this.m = this.enableXO ? new Uint8Array(0x10000) : new Uint8Array(0x1000);
@@ -150,6 +195,19 @@ function Emulator() {
 		this.metadata = rom;
 		this.tickCounter = 0;
 		this.profile_data = {};
+
+		this.nextIOAddress = 0x1f0;
+		this.ioDevices = [];
+
+		var chip = this
+		_mapperDeviceList.forEach(function(callback) { callback(chip) })
+	}
+
+	this.initXOIO = function(compat) {
+		this.nextIOAddress = compat? 0x1f0: 0
+		this.ioDevices = []
+		var chip = this
+		_deviceList.forEach(function(callback) { callback(chip) })
 	}
 
 	this.writeCarry = function(dest, value, flag) {
@@ -161,15 +219,25 @@ function Emulator() {
 	}
 
 	this.store = function(addr, value) {
+		var devices = this.ioDevices;
 		if (addr < 0x200) {
-			console.log('TRAP', addr)
+			for(var i = 0; i < devices.length; ++i) {
+				var device = devices[i]
+				if (addr >= device.base && addr < device.base + device.size)
+					return device.store(addr, value)
+			}
 		}
-		return (this.m[addr] = value)
+		this.m[addr] = value
 	}
 
 	this.load = function(addr) {
+		var devices = this.ioDevices;
 		if (addr < 0x200) {
-			console.log('TRAP')
+			for(var i = 0; i < devices.length; ++i) {
+				var device = devices[i]
+				if (addr >= device.base && addr < device.base + device.size)
+					return device.load(addr)
+			}
 		}
 		return this.m[addr]
 	}
