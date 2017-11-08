@@ -20,4 +20,4 @@ GistLoader.prototype.store = function(addr, value, region, chip) {
 	}
 }
 
-xoioRegisterDevice(function(chip) { chip.registerIODevice(1, new GistLoader()) })
+xoioRegisterDevice(IO_ID_GIST, function(chip) { chip.registerIODevice(IO_ID_GIST, 1, new GistLoader()) })
