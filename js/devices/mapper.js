@@ -1,9 +1,10 @@
 var IO_ID_MAPPER   = 0
 var IO_ID_GIST     = 1
 var IO_ID_MOUSE    = 2
-var IO_ID_GAMEPAD1 = 3
-var IO_ID_GAMEPAD2 = 4
-var IO_ID_YM2612   = 5
+var IO_ID_KEYBOARD = 3
+var IO_ID_GAMEPAD1 = 4
+var IO_ID_GAMEPAD2 = 5
+var IO_ID_YM2612   = 6
 
 var IORegion = function(id, base, size, device, chip) {
 	device.id = id
