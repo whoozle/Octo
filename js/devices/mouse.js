@@ -11,7 +11,12 @@ MouseDriver.prototype.setMouseState = function(x, y, buttons) {
 
 	chip.mouseState[0] = x
 	chip.mouseState[1] = y
-	chip.mouseState[2] = buttons
+
+	var fifo = chip.mouseState[2]
+	var len = fifo.length
+	var currentState = len > 0? fifo[len - 1]: 0
+	if (currentState !== buttons)
+		fifo.push(buttons) //limit fifo length?
 }
 
 MouseDriver.prototype.handleMouseEvent = function(e) {
@@ -21,7 +26,7 @@ MouseDriver.prototype.handleMouseEvent = function(e) {
 
 
 MouseDriver.prototype.init = function(chip) {
-	chip.mouseState = [0, 0, 0]
+	chip.mouseState = [0, 0, []]
 
 	var handleMouseEvent = this.handleMouseEvent.bind(this)
 	this._handler = handleMouseEvent
@@ -41,6 +46,11 @@ MouseDriver.prototype.deinit = function(chip) {
 }
 
 MouseDriver.prototype.load = function(addr, region, chip) {
+	if (addr === 2) {
+		var fifo = chip.mouseState[addr]
+		var next = fifo.pop()
+		return next !== undefined? next: 0
+	}
 	return chip.mouseState[addr]
 }
 
