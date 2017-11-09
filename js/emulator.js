@@ -130,7 +130,7 @@ function Emulator() {
 	this.registerIODevice = function(id, size, device) {
 		var addr = this.allocateIORegion(size)
 		var device = new IORegion(id, addr, size, device, this)
-		device.init()
+		device.init(this)
 		this.ioDevices.push(device)
 	}
 
@@ -180,9 +180,9 @@ function Emulator() {
 
 	this.initXOIO = function(compat) {
 		this.nextIOAddress = compat? 0x1f0: 0
-		this.ioDevices.forEach(function(device) { device.deinit(); } )
-		this.ioDevices = []
 		var chip = this
+		this.ioDevices.forEach(function(device) { device.deinit(chip); } )
+		this.ioDevices = []
 		_mapperDeviceList.forEach(function(callback) { callback(chip) })
 	}
 
