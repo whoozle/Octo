@@ -269,13 +269,3 @@ function escapeHtml(str) {
     div.appendChild(document.createTextNode(str));
     return div.innerHTML;
 }
-
-function setMouseState(x, y, buttons) {
-	var size = emulator.hires ? scaleFactor : scaleFactor*2;
-	y = Math.floor(y / size)
-	x = Math.floor(x / size)
-
-	emulator.mouseState[0] = x
-	emulator.mouseState[1] = y
-	emulator.mouseState[2] = buttons
-}

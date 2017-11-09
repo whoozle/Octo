@@ -129,9 +129,6 @@ function runRom(rom) {
 	document.getElementById("emulator").style.backgroundColor = emulator.quietColor;
 	window.addEventListener("keydown", keyDown, false);
 	window.addEventListener("keyup"  , keyUp  , false);
-	document.getElementById("target").addEventListener("mousemove", handleMouseEvent, false);
-	document.getElementById("target").addEventListener("click", handleMouseEvent, false);
-	document.getElementById("target").addEventListener("contextmenu", handleMouseEvent, false);
 	intervalHandle = setInterval(render, 1000/60);
 }
 
@@ -139,9 +136,6 @@ function reset() {
 	document.getElementById("emulator").style.display = "none";
 	window.removeEventListener("keydown", keyDown, false);
 	window.removeEventListener("keyup"  , keyUp  , false);
-	document.getElementById("target").removeEventListener("mousemove", handleMouseEvent, false);
-	document.getElementById("target").removeEventListener("click", handleMouseEvent, false);
-	document.getElementById("target").removeEventListener("contextmenu", handleMouseEvent, false);
 	window.clearInterval(intervalHandle);
 	clearBreakpoint();
 	stopAudio();
@@ -362,11 +356,6 @@ function keyUp(event) {
 			}
 		}
 	}
-}
-
-function handleMouseEvent(e) {
-	setMouseState(e.offsetX, e.offsetY, e.buttons)
-	e.preventDefault()
 }
 
 ////////////////////////////////////

@@ -172,7 +172,6 @@ function Emulator() {
 		this.tickCounter = 0;
 		this.profile_data = {};
 
-		this.mouseState = [0, 0, 0];
 		this.ioDevices = [];
 
 		this.initXOIO(true); //init in compat mode
