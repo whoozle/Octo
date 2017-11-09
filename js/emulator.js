@@ -129,7 +129,9 @@ function Emulator() {
 
 	this.registerIODevice = function(id, size, device) {
 		var addr = this.allocateIORegion(size)
-		this.ioDevices.push(new IORegion(id, addr, size, device, this))
+		var device = new IORegion(id, addr, size, device, this)
+		device.init()
+		this.ioDevices.push(device)
 	}
 
 	this.init = function(rom) {
@@ -171,12 +173,14 @@ function Emulator() {
 		this.profile_data = {};
 
 		this.mouseState = [0, 0, 0];
+		this.ioDevices = [];
 
 		this.initXOIO(true); //init in compat mode
 	}
 
 	this.initXOIO = function(compat) {
 		this.nextIOAddress = compat? 0x1f0: 0
+		this.ioDevices.forEach(function(device) { device.deinit(); } )
 		this.ioDevices = []
 		var chip = this
 		_mapperDeviceList.forEach(function(callback) { callback(chip) })

@@ -17,6 +17,17 @@ var IORegion = function(id, base, size, device, chip) {
 	this.chip = chip
 }
 
+IORegion.prototype.init = function() {
+	var device = this.device
+	if ('init' in device)
+		device.init()
+}
+IORegion.prototype.deinit = function() {
+	var device = this.device
+	if ('deinit' in device)
+		device.deinit()
+}
+
 IORegion.prototype.load = function(addr) {
 	addr -= this.base
 	if (addr < 0 || addr >= this.size)
