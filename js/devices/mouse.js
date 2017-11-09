@@ -31,16 +31,19 @@ MouseDriver.prototype.init = function(chip) {
 	var handleMouseEvent = this.handleMouseEvent.bind(this)
 	this._handler = handleMouseEvent
 
-	document.getElementById("target").addEventListener("mousemove", handleMouseEvent, false)
-	document.getElementById("target").addEventListener("click", handleMouseEvent, false)
-	document.getElementById("target").addEventListener("contextmenu", handleMouseEvent, false)
+	var canvas = document.getElementById("target")
+	canvas.addEventListener("mousemove", handleMouseEvent, false)
+	canvas.addEventListener("click", handleMouseEvent, false)
+	canvas.addEventListener("contextmenu", handleMouseEvent, false)
 }
 
 MouseDriver.prototype.deinit = function(chip) {
 	var handleMouseEvent = this._handler
-	document.getElementById("target").removeEventListener("mousemove", handleMouseEvent, false);
-	document.getElementById("target").removeEventListener("click", handleMouseEvent, false);
-	document.getElementById("target").removeEventListener("contextmenu", handleMouseEvent, false);
+
+	var canvas = document.getElementById("target")
+	canvas.removeEventListener("mousemove", handleMouseEvent, false);
+	canvas.removeEventListener("click", handleMouseEvent, false);
+	canvas.removeEventListener("contextmenu", handleMouseEvent, false);
 
 	delete chip.mouseState
 }
@@ -55,6 +58,10 @@ MouseDriver.prototype.load = function(addr, region, chip) {
 }
 
 MouseDriver.prototype.store = function(addr, value, region, chip) {
+	var canvas = document.getElementById("target")
+	if (addr == 0) {
+		canvas.style.cursor = (value & 1)? 'none': 'default'
+	}
 }
 
 xoioRegisterDevice(IO_ID_MOUSE, function(chip) { chip.registerIODevice(IO_ID_MOUSE, 3, new MouseDriver(chip)) })
