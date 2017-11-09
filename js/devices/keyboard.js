@@ -16,20 +16,30 @@
 
 // TODO: Should remove listeners on teardown
 
-var keyboard_keys = {};
 
 var Keyboard = function() {
 	this.requested = null;
+	this.keys = {};
 
-	window.addEventListener("keydown", function(event) {
+	this._keydown = function(event) {
 		//console.log(event.keyCode);
-		keyboard_keys[event.keyCode] = true;
-	}, false);
+		self.keys[event.keyCode] = true;
+	}
+	this._keyup = function(event) {
+		//console.log(event.keyCode);
+		self.keys[event.keyCode] = false;
+	}
+}
 
-	window.addEventListener("keyup", function(event) {
-		//console.log(event.keyCode);
-		keyboard_keys[event.keyCode] = false;
-	}, false);
+Keyboard.prototype.init = function(chip) {
+	var self = this
+	window.addEventListener("keydown", this._keydown, false);
+	window.addEventListener("keyup", this._keyup, false);
+}
+
+Keyboard.prototype.deinit = function(chip) {
+	window.removeEventListener("keydown", this._keydown, false);
+	window.removeEventListener("keyup", this._keyup, false);
 }
 
 Keyboard.prototype.load = function(addr, region, chip) {
