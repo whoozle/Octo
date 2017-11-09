@@ -21,6 +21,7 @@ var Keyboard = function() {
 	this.requested = null;
 	this.keys = {};
 
+	var self = this
 	this._keydown = function(event) {
 		//console.log(event.keyCode);
 		self.keys[event.keyCode] = true;
@@ -32,7 +33,6 @@ var Keyboard = function() {
 }
 
 Keyboard.prototype.init = function(chip) {
-	var self = this
 	window.addEventListener("keydown", this._keydown, false);
 	window.addEventListener("keyup", this._keyup, false);
 }
