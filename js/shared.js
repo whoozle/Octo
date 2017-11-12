@@ -108,11 +108,11 @@ function renderDisplay(emulator) {
 	// NOTE: toggling emulator.hires changes emulator.p dimensions.
 	var colors = [emulator.backColor, emulator.fillColor, emulator.fillColor2, emulator.blendColor];
 	if (c.last !== undefined) {
-		if (arrayEqual(c.last.p[0], emulator.p[0]) && arrayEqual(c.last.p[1], emulator.p[1])
-				&& arrayEqual(c.last.colors, colors)) {
+		if (arrayEqual(c.last.p[0], emulator.p[0]) && arrayEqual(c.last.p[1], emulator.p[1])) {
 			return;
 		}
-		if (c.last.p[0].length != emulator.p[0].length)
+
+		if (c.last.p[0].length != emulator.p[0].length || !arrayEqual(c.last.colors, colors))
 			c.last = undefined
 	}
 	var g = c.getContext("2d");
