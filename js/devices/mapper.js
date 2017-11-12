@@ -4,7 +4,8 @@ var IO_ID_MOUSE    = 2
 var IO_ID_KEYBOARD = 3
 var IO_ID_GAMEPAD1 = 4
 var IO_ID_GAMEPAD2 = 5
-var IO_ID_YM2612   = 6
+var IO_ID_SETTINGS = 6
+var IO_ID_YM2612   = 7
 
 var IORegion = function(id, base, size, device, chip) {
 	device.id = id
@@ -62,6 +63,8 @@ XOMapper.prototype.store = function(addr, value, region, chip) {
 		if (value & 0x80) {
 			var newDevice = value & 0x7f
 			var createDevice = _deviceList[newDevice] //add multiple device support here, e.g. gamepads
+			if (createDevice === undefined)
+				throw new Error('no device with id ' + newDevice + ' was registered')
 			createDevice(chip)
 		} else {
 			for(var i = 0; i < chip.ioDevices.length; ++i) {
