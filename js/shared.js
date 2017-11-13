@@ -188,6 +188,18 @@ var TIMER_FREQ = 60;
 var SAMPLES = 16;
 var BUFFER_SIZE = SAMPLES * 8
 
+var _audioCallbacks = []
+
+function registerAudioCallback(callback) {
+	_audioCallbacks.push(callback)
+}
+
+function unregisterAudioCallback(callback) {
+	var idx = _audioCallbacks.indexOf(callback)
+	if (idx >= 0)
+		_audioCallbacks.splice(idx, 1)
+}
+
 function audioSetup() {
 	if (!audio) {
 		if (typeof AudioContext !== 'undefined') {
@@ -226,6 +238,7 @@ function audioSetup() {
 					audioDataSize -= audioData.shift().duration;
 				}
 			}
+			_audioCallbacks.forEach(function(callback) { callback(audioProcessingEvent) })
 		}
 		audioData = [];
 		audioNode.connect(audio.destination);
